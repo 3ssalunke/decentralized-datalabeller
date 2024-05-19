@@ -25,7 +25,8 @@ model Task {
   title      String
   user_id    Int
   signature  String
-  payment    String
+  payment    Int
+  done       Boolean      @default(false)
   user       User         @relation(fields: [user_id], references: [id])
   options    Option[]
   Submission Submission[]
@@ -46,6 +47,7 @@ model Worker {
   name       String?
   Submission Submission[]
   Balance    Balance?
+  Payout     Payout[]
 }
 
 model Balance {
@@ -61,8 +63,25 @@ model Submission {
   worker_id Int
   option_id Int
   task_id   Int
-  amount    String
+  amount    Int
   worker    Worker @relation(fields: [worker_id], references: [id])
   option    Option @relation(fields: [option_id], references: [id])
   task      Task   @relation(fields: [task_id], references: [id])
+
+  @@unique([worker_id, task_id])
+}
+
+model Payout {
+  id        Int       @id @default(autoincrement())
+  worker_id Int
+  amount    Int
+  signature String
+  worker    Worker    @relation(fields: [worker_id], references: [id])
+  status    TxnStatus
+}
+
+enum TxnStatus {
+  Processing
+  Success
+  Failure
 }

@@ -11,3 +11,12 @@ export const createTaskInput = z.object({
   title: z.string(),
   signature: z.string(),
 });
+
+export const createSubmissionInput = z.object({
+  taskId: z.number(),
+  selection: z.number(),
+});
+
+export const payoutInput = z.object({
+  payout: z.number(),
+});

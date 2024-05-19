@@ -5,7 +5,7 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import { S3Client } from "@aws-sdk/client-s3";
 import { authMiddleware } from "../middlewares";
-import { AWS_BUCKET_NAME, JWT_SECRET } from "../config";
+import { AWS_BUCKET_NAME, TOTAL_DECIMALS, USER_JWT_SECRET } from "../config";
 import { createTaskInput } from "../validators";
 
 export default function (
@@ -87,17 +87,17 @@ export default function (
       });
     }
 
-    const task = await prismaClient.$transaction(async (tx) => {
-      const task = await tx.task.create({
+    const task = await prismaClient.$transaction(async (txn) => {
+      const task = await txn.task.create({
         data: {
           title: parsedInputs.data.title,
-          payment: "1",
+          payment: 1 * TOTAL_DECIMALS,
           signature: parsedInputs.data.signature,
           user_id: user.id,
         },
       });
 
-      await tx.option.createMany({
+      await txn.option.createMany({
         data: parsedInputs.data.options.map((option, index) => ({
           image_url: option.imageUrl,
           task_id: task.id,
@@ -147,7 +147,7 @@ export default function (
         {
           userId: exitstingUser.id,
         },
-        JWT_SECRET
+        USER_JWT_SECRET
       );
 
       return res.json({ token });
@@ -161,7 +161,7 @@ export default function (
         {
           userId: user.id,
         },
-        JWT_SECRET
+        USER_JWT_SECRET
       );
 
       return res.json({ token });

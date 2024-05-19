@@ -2,10 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
-import { JWT_SECRET } from "./config";
+import { USER_JWT_SECRET, WORKER_JWT_SECRET } from "./config";
 
 export function authMiddleware(
-  prismaClient: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>
+  prismaClient: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+  authFor: "user" | "worker" = "user"
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers["authorization"] || "";
@@ -16,26 +17,54 @@ export function authMiddleware(
     }
 
     try {
-      const decoded = jwt.verify(authHeader, JWT_SECRET) as { userId: number };
-      if (decoded.userId) {
-        // @ts-ignore
-        const user = await prismaClient.user.findFirst({
-          where: {
-            id: decoded.userId,
-          },
-        });
-        if (!user) {
+      if (authFor === "worker") {
+        const decoded = jwt.verify(authHeader, WORKER_JWT_SECRET) as {
+          workerId: number;
+        };
+        if (decoded.workerId) {
+          // @ts-ignore
+          const worker = await prismaClient.worker.findFirst({
+            where: {
+              id: decoded.workerId,
+            },
+          });
+          if (!worker) {
+            return res.status(401).json({
+              message: "invalid authorization token",
+            });
+          }
+          // @ts-ignore
+          req.worker = worker;
+          next();
+        } else {
           return res.status(401).json({
-            message: "invalid authorization token",
+            message: "you are not logged in",
           });
         }
-        // @ts-ignore
-        req.user = user;
-        next();
       } else {
-        return res.status(401).json({
-          message: "you are not logged in",
-        });
+        const decoded = jwt.verify(authHeader, USER_JWT_SECRET) as {
+          userId: number;
+        };
+        if (decoded.userId) {
+          // @ts-ignore
+          const user = await prismaClient.user.findFirst({
+            where: {
+              id: decoded.userId,
+            },
+          });
+          if (!user) {
+            return res.status(401).json({
+              message: "invalid authorization token",
+            });
+          }
+          // @ts-ignore
+          req.user = user;
+          next();
+        } else {
+          return res.status(401).json({
+            message: "you are not logged in",
+          });
+        }
       }
     } catch (error) {
       console.error(error);

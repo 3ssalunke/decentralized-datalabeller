@@ -15,12 +15,14 @@
     "@aws-sdk/client-s3": "^3.577.0",
     "@aws-sdk/s3-presigned-post": "^3.577.0",
     "@prisma/client": "^5.14.0",
+    "cors": "^2.8.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^5.14.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
     "nodemon": "^3.1.0",
