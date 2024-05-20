@@ -165,11 +165,11 @@ export default function (
   );
 
   router.post("/signin", async (_, res) => {
-    const hardcodeWallerAddress = "0x12844DaEa89F6eF45F6C822eF596577ba722a3B6";
+    const hardcodeWalletAddress = "0x12844DaEa89F6eF45F6C822eF596577ba722a3B6";
 
     const exitstingWorker = await prismaClient.worker.findFirst({
       where: {
-        address: hardcodeWallerAddress,
+        address: hardcodeWalletAddress,
       },
     });
     if (exitstingWorker) {
@@ -185,7 +185,7 @@ export default function (
       const worker = await prismaClient.$transaction(async (txn) => {
         const worker = await txn.worker.create({
           data: {
-            address: hardcodeWallerAddress,
+            address: hardcodeWalletAddress,
             name: "testworker",
           },
         });

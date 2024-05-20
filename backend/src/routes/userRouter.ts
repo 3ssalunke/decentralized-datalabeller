@@ -135,11 +135,11 @@ export default function (
   );
 
   router.post("/signin", async (_, res) => {
-    const hardcodeWallerAddress = "0x12844DaEa89F6eF45F6C822eF596577ba722a3B6";
+    const hardcodeWalletAddress = "0x12844DaEa89F6eF45F6C822eF596577ba722a3B6";
 
     const exitstingUser = await prismaClient.user.findFirst({
       where: {
-        address: hardcodeWallerAddress,
+        address: hardcodeWalletAddress,
       },
     });
     if (exitstingUser) {
@@ -154,7 +154,7 @@ export default function (
     } else {
       const user = await prismaClient.user.create({
         data: {
-          address: hardcodeWallerAddress,
+          address: hardcodeWalletAddress,
         },
       });
       const token = jwt.sign(
