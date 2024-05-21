@@ -24,8 +24,9 @@ export default function (
         id: Number(taskId),
         user_id: user.id,
       },
-      include: {
+      select: {
         options: true,
+        title: true,
       },
     });
     if (!task) {
@@ -79,11 +80,13 @@ export default function (
     // @ts-ignore
     const user = req.user;
     const inputs = req.body;
+    console.log(inputs);
 
     const parsedInputs = createTaskInput.safeParse(inputs);
     if (!parsedInputs.success) {
       return res.status(411).json({
         message: "you have sent wrong inputs",
+        error: parsedInputs.error,
       });
     }
 

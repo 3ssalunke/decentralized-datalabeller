@@ -1,8 +1,7 @@
 "use client";
 
 import { AWS_CLOUDFRONT_DIST_URL } from "@/constants";
-import Image from "next/image";
-import React, { useState } from "react";
+import { ChangeEventHandler, useState } from "react";
 
 export default function UploadImage({
   onImageAdded,
@@ -13,9 +12,7 @@ export default function UploadImage({
 }) {
   const [uploading, setUploading] = useState(false);
 
-  const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = async (
-    e
-  ) => {
+  const handleFileChange: ChangeEventHandler<HTMLInputElement> = async (e) => {
     setUploading(true);
 
     try {
@@ -35,7 +32,6 @@ export default function UploadImage({
           throw new Error("response was not ok for presignedurl api call");
         }
         const responseData = await response.json();
-        console.log(responseData);
 
         const formData = new FormData();
         formData.set("bucket", responseData.fields["bucket"]);
@@ -64,12 +60,15 @@ export default function UploadImage({
       }
     } catch (error) {
       console.error(error);
+      alert(
+        "something went wrong while creating presigned url or uploading image to s3"
+      );
     }
   };
 
   if (image) {
-    console.log(image);
-    return <Image height={160} width={160} alt="uploaded-images" src={image} />;
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img className="w-40 h-40" alt="uploaded-images" src={image} />;
   }
 
   return (
