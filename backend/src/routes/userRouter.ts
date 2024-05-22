@@ -80,7 +80,6 @@ export default function (
     // @ts-ignore
     const user = req.user;
     const inputs = req.body;
-    console.log(inputs);
 
     const parsedInputs = createTaskInput.safeParse(inputs);
     if (!parsedInputs.success) {

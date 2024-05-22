@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../../../../../common/config";
 
 async function getTaskDetails(taskId: string) {
   try {
     const response = await fetch(
-      `http://localhost:3000/api/v1/user/task?taskId=${taskId}`,
+      `${API_BASE_URL}/v1/user/task?taskId=${taskId}`,
       {
         method: "GET",
         headers: {
@@ -47,7 +48,6 @@ export default function Task({
 
   useEffect(() => {
     getTaskDetails(taskId).then((data) => {
-      console.log(data.result);
       setResult(data.result);
       setTaskDetails(data.task);
     });

@@ -165,7 +165,7 @@ export default function (
   );
 
   router.post("/signin", async (_, res) => {
-    const hardcodeWalletAddress = "0x12844DaEa89F6eF45F6C822eF596577ba722a3B6";
+    const hardcodeWalletAddress = "0x12844DaEa89F6eF45F6C822eF596577ba722a3DD";
 
     const exitstingWorker = await prismaClient.worker.findFirst({
       where: {

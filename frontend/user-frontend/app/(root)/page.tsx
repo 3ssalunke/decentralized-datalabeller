@@ -3,6 +3,7 @@
 import UploadImage from "@/components/UploadImage";
 import { useRouter } from "next/navigation";
 import { MouseEventHandler, useState } from "react";
+import { API_BASE_URL } from "../../../common/config";
 
 export default function Home() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function Home() {
           imageUrl: img,
         })),
       };
-      const response = await fetch("http://localhost:3000/api/v1/user/task", {
+      const response = await fetch(`${API_BASE_URL}/v1/user/task`, {
         method: "POST",
         headers: {
           Authorization: localStorage.getItem("decentDLB__auth__jwt") || "",

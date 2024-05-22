@@ -1,7 +1,7 @@
 "use client";
 
-import { AWS_CLOUDFRONT_DIST_URL } from "@/constants";
 import { ChangeEventHandler, useState } from "react";
+import { API_BASE_URL, AWS_CLOUDFRONT_DIST_URL } from "../../common/config";
 
 export default function UploadImage({
   onImageAdded,
@@ -18,15 +18,12 @@ export default function UploadImage({
     try {
       const file = e.target?.files?.[0];
       if (file && onImageAdded) {
-        const response = await fetch(
-          "http://localhost:3000/api/v1/user/presignedurl",
-          {
-            method: "GET",
-            headers: {
-              Authorization: localStorage.getItem("decentDLB__auth__jwt") || "",
-            },
-          }
-        );
+        const response = await fetch(`${API_BASE_URL}/v1/user/presignedurl`, {
+          method: "GET",
+          headers: {
+            Authorization: localStorage.getItem("decentDLB__auth__jwt") || "",
+          },
+        });
 
         if (!response.ok) {
           throw new Error("response was not ok for presignedurl api call");
