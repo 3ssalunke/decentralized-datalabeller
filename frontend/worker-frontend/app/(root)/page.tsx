@@ -1,7 +1,7 @@
 "use client";
 
-import { MouseEvent, MouseEventHandler, useEffect, useState } from "react";
-import { API_BASE_URL } from "../../../common/config";
+import { MouseEventHandler, useEffect, useState } from "react";
+import { API_BASE_URL } from "../../config";
 
 interface Option {
   id: number;

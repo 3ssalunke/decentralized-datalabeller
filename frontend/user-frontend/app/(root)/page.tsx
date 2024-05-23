@@ -3,7 +3,7 @@
 import UploadImage from "@/components/UploadImage";
 import { useRouter } from "next/navigation";
 import { MouseEventHandler, useState } from "react";
-import { API_BASE_URL } from "../../../common/config";
+import { API_BASE_URL } from "../../config";
 
 export default function Home() {
   const router = useRouter();

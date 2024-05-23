@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEventHandler, useState } from "react";
-import { API_BASE_URL, AWS_CLOUDFRONT_DIST_URL } from "../../common/config";
+import { API_BASE_URL, AWS_CLOUDFRONT_DIST_URL } from "../config";
 
 export default function UploadImage({
   onImageAdded,
