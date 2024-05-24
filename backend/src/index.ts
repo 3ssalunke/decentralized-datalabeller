@@ -2,8 +2,8 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { S3Client } from "@aws-sdk/client-s3";
 import cors from "cors";
-import userRouter from "./routes/userRouter";
-import workerRouter from "./routes/workerRouter";
+import userRouter from "./routes/user";
+import workerRouter from "./routes/worker";
 import { AWS_ACCESS_KEY, AWS_SECRET_KEY } from "./config";
 
 const prismaClient = new PrismaClient();

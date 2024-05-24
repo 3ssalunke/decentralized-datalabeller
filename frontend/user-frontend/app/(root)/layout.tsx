@@ -5,10 +5,9 @@ import {
   WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import { clusterApiUrl } from "@solana/web3.js";
 import { useMemo } from "react";
 import Navbar from "../../components/Navbar";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 
 // Default styles that can be overridden by your app
 require("@solana/wallet-adapter-react-ui/styles.css");
@@ -19,10 +18,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const network = WalletAdapterNetwork.Devnet;
+  const endpoint =
+    "https://solana-devnet.g.alchemy.com/v2/SF1L-DvXR7oA-9CCAm0WGQ2h3SqLkxWR";
 
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-
-  const wallets = useMemo(() => [], []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const wallets = useMemo(() => [], [network]);
 
   return (
     <main>

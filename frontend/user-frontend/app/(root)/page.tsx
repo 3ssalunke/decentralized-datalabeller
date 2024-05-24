@@ -3,13 +3,52 @@
 import UploadImage from "@/components/UploadImage";
 import { useRouter } from "next/navigation";
 import { MouseEventHandler, useState } from "react";
-import { API_BASE_URL } from "../../config";
+import { API_BASE_URL, PARENT_WALLET_ADDRESS } from "../../config";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 
 export default function Home() {
   const router = useRouter();
   const [images, setImages] = useState<string[] | []>([]);
   const [title, setTitle] = useState("");
-  const [signature, setSignature] = useState("usertxnsignature");
+  const [signature, setSignature] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { connection } = useConnection();
+  const { publicKey, sendTransaction } = useWallet();
+
+  const makePayment = async () => {
+    setLoading(true);
+    try {
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey!,
+          toPubkey: new PublicKey(PARENT_WALLET_ADDRESS),
+          lamports: 100000000,
+        })
+      );
+
+      const {
+        context: { slot: minContextSlot },
+        value: { blockhash, lastValidBlockHeight },
+      } = await connection.getLatestBlockhashAndContext();
+
+      const signature = await sendTransaction(transaction, connection, {
+        minContextSlot,
+      });
+
+      await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature,
+      });
+      setSignature(signature);
+    } catch (error) {
+      console.error(error);
+      alert("something went wrong while making payment. please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmitTask: MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.preventDefault();
@@ -98,9 +137,13 @@ export default function Home() {
           <div className="text-center">
             <button
               className="px-3 py-1 bg-white rounded-md text-black font-medium"
-              onClick={handleSubmitTask}
+              onClick={signature ? handleSubmitTask : makePayment}
             >
-              Submit Task
+              {loading
+                ? "Processing..."
+                : signature
+                ? "Submit Task"
+                : "Pay 0.1 Sol"}
             </button>
           </div>
         </form>

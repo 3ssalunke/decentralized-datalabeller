@@ -6,3 +6,6 @@ export const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY || "";
 export const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY || "";
 
 export const TOTAL_DECIMALS = 1000_000_000;
+
+export const RPC_URL = process.env.RPC_URL || "";
+export const PARENT_WALLET_ADDRESS = process.env.PARENT_WALLET_ADDRESS || "";

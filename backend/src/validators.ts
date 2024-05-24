@@ -1,5 +1,11 @@
 import z from "zod";
 
+export const signinInput = z.object({
+  message: z.array(z.number()),
+  signature: z.array(z.number()),
+  publicKey: z.string(),
+});
+
 export const createTaskInput = z.object({
   options: z
     .array(

@@ -5,8 +5,18 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import { S3Client } from "@aws-sdk/client-s3";
 import { authMiddleware } from "../middlewares";
-import { AWS_BUCKET_NAME, TOTAL_DECIMALS, USER_JWT_SECRET } from "../config";
-import { createTaskInput } from "../validators";
+import {
+  AWS_BUCKET_NAME,
+  PARENT_WALLET_ADDRESS,
+  RPC_URL,
+  TOTAL_DECIMALS,
+  USER_JWT_SECRET,
+} from "../config";
+import { createTaskInput, signinInput } from "../validators";
+import nacl from "tweetnacl";
+import { Connection, PublicKey } from "@solana/web3.js";
+
+const connection = new Connection(RPC_URL);
 
 export default function (
   prismaClient: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
@@ -89,6 +99,41 @@ export default function (
       });
     }
 
+    const transaction = await connection.getTransaction(
+      parsedInputs.data.signature,
+      {
+        maxSupportedTransactionVersion: 1,
+      }
+    );
+
+    if (
+      (transaction?.meta?.postBalances[1] ?? 0) -
+        (transaction?.meta?.preBalances[1] ?? 0) !==
+      100000000
+    ) {
+      return res.status(411).json({
+        message: "Transaction signature/amount incorrect",
+      });
+    }
+
+    if (
+      transaction?.transaction.message.getAccountKeys().get(1)?.toString() !==
+      PARENT_WALLET_ADDRESS
+    ) {
+      return res.status(411).json({
+        message: "Transaction sent to wrong address",
+      });
+    }
+
+    if (
+      transaction?.transaction.message.getAccountKeys().get(0)?.toString !==
+      user.wallet
+    ) {
+      return res.status(411).json({
+        message: "Transaction sent from wrong address",
+      });
+    }
+
     const task = await prismaClient.$transaction(async (txn) => {
       const task = await txn.task.create({
         data: {
@@ -136,12 +181,31 @@ export default function (
     }
   );
 
-  router.post("/signin", async (_, res) => {
-    const hardcodeWalletAddress = "0x12844DaEa89F6eF45F6C822eF596577ba722a3B6";
+  router.post("/signin", async (req, res) => {
+    const inputs = req.body;
+    const parsedInputs = signinInput.safeParse(inputs);
+    if (!parsedInputs.success) {
+      return res.status(411).json({
+        message: "you have sent wrong inputs",
+        error: parsedInputs.error,
+      });
+    }
+
+    const { message, signature, publicKey } = parsedInputs.data;
+    const _message = Uint8Array.from(message);
+    const _signature = Uint8Array.from(signature);
+    const _publicKey = new PublicKey(publicKey).toBytes();
+
+    const result = nacl.sign.detached.verify(_message, _signature, _publicKey);
+    if (!result) {
+      return res.status(411).json({
+        message: "incorrect signature",
+      });
+    }
 
     const exitstingUser = await prismaClient.user.findFirst({
       where: {
-        address: hardcodeWalletAddress,
+        address: publicKey,
       },
     });
     if (exitstingUser) {
@@ -156,7 +220,7 @@ export default function (
     } else {
       const user = await prismaClient.user.create({
         data: {
-          address: hardcodeWalletAddress,
+          address: publicKey,
         },
       });
       const token = jwt.sign(
