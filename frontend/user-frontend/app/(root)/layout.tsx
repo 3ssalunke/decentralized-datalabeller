@@ -29,8 +29,10 @@ export default function RootLayout({
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
-            <Navbar />
-            {children}
+            <main>
+              <Navbar />
+              {children}
+            </main>
           </WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>

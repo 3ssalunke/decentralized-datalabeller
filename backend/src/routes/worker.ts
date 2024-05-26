@@ -5,7 +5,9 @@ import jwt from "jsonwebtoken";
 import { WORKER_JWT_SECRET } from "../config";
 import { authMiddleware } from "../middlewares";
 import { getWorkerNextTask } from "../repo";
-import { createSubmissionInput, payoutInput } from "../validators";
+import { createSubmissionInput, payoutInput, signinInput } from "../validators";
+import { PublicKey } from "@solana/web3.js";
+import nacl from "tweetnacl";
 
 const MAX_SUBMISSIONS_PER_WORKER = 100;
 
@@ -164,12 +166,34 @@ export default function (
     }
   );
 
-  router.post("/signin", async (_, res) => {
-    const hardcodeWalletAddress = "0x12844DaEa89F6eF45F6C822eF596577ba722a3DD";
+  router.post("/signin", async (req, res) => {
+    const inputs = req.body;
+    const parsedInputs = signinInput.safeParse(inputs);
+    if (!parsedInputs.success) {
+      return res.status(411).json({
+        message: "you have sent wrong inputs",
+        error: parsedInputs.error,
+      });
+    }
+
+    const { message, signature, publicKey } = parsedInputs.data;
+    const _message = Uint8Array.from(message);
+    const _signature = Uint8Array.from(signature);
+    const _publicKey = new PublicKey(publicKey).toBytes();
+
+    const result = nacl.sign.detached.verify(_message, _signature, _publicKey);
+    if (!result) {
+      return res.status(411).json({
+        message: "incorrect signature",
+      });
+    }
 
     const exitstingWorker = await prismaClient.worker.findFirst({
       where: {
-        address: hardcodeWalletAddress,
+        address: publicKey,
+      },
+      include: {
+        Balance: true,
       },
     });
     if (exitstingWorker) {
@@ -180,12 +204,15 @@ export default function (
         WORKER_JWT_SECRET
       );
 
-      return res.json({ token });
+      return res.json({
+        token,
+        amount: exitstingWorker.Balance?.pending_amount ?? 0,
+      });
     } else {
       const worker = await prismaClient.$transaction(async (txn) => {
         const worker = await txn.worker.create({
           data: {
-            address: hardcodeWalletAddress,
+            address: publicKey,
             name: "testworker",
           },
         });
@@ -208,7 +235,7 @@ export default function (
         WORKER_JWT_SECRET
       );
 
-      return res.json({ token });
+      return res.json({ token, amount: 0 });
     }
   });
 

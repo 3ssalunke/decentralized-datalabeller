@@ -16,8 +16,27 @@ export default function Home() {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
 
-  const makePayment = async () => {
+  const inputFieldValidation = () => {
+    if (!title) {
+      alert("please add title");
+      return false;
+    }
+
+    if (images.length < 2) {
+      alert("please add atleast two images");
+      return false;
+    }
+
+    return true;
+  };
+
+  const makePayment: MouseEventHandler<HTMLButtonElement> = async (e) => {
+    e.preventDefault();
+
+    if (!inputFieldValidation()) return;
+
     setLoading(true);
+
     try {
       const transaction = new Transaction().add(
         SystemProgram.transfer({
@@ -53,20 +72,13 @@ export default function Home() {
   const handleSubmitTask: MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.preventDefault();
 
-    if (!title) {
-      alert("please add title");
-      return;
-    }
-
-    if (images.length < 2) {
-      alert("please add atleast two images");
-      return;
-    }
-
+    if (!inputFieldValidation()) return;
     if (!signature) {
       alert("please make payment first to submit the task");
       return;
     }
+
+    setLoading(true);
 
     let responseData;
 
@@ -94,6 +106,8 @@ export default function Home() {
       console.error(error);
       alert("submit task failed. Please retry");
       return;
+    } finally {
+      setLoading(false);
     }
 
     router.push(`/task/${responseData.id}`);
@@ -138,6 +152,7 @@ export default function Home() {
             <button
               className="px-3 py-1 bg-white rounded-md text-black font-medium"
               onClick={signature ? handleSubmitTask : makePayment}
+              type="button"
             >
               {loading
                 ? "Processing..."
